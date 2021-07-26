@@ -5,6 +5,7 @@ import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecrAssets from '@aws-cdk/aws-ecr-assets';
 import * as ecs from '@aws-cdk/aws-ecs';
 import * as elbv2 from '@aws-cdk/aws-elasticloadbalancingv2';
+import * as s3 from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
 
 export class CdkLogsAnalysisStack extends cdk.Stack {
@@ -47,13 +48,24 @@ export class CdkLogsAnalysisStack extends cdk.Stack {
       targets: [fatgetService],
     });
 
+    const bucket = new s3.Bucket(this, 'TestBucket');
     const cdn = new cloudfront.Distribution(this, 'Cloudfront', {
       defaultBehavior: {
         origin: new origins.LoadBalancerV2Origin(loadBalancer, {
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
         }),
       },
+      logBucket: bucket,
+      logFilePrefix: 'doesntMatterBecauseThisWillBeReplaced',
+      logIncludesCookies: true,
     });
+
+    //console.log(cdn.node.defaultChild); // Use this line to observe the child ID, which will be put into findChild() function next line.
+    const cfnDistribution = cdn.node.findChild('Resource') as cloudfront.CfnDistribution;
+    cfnDistribution.addPropertyOverride(
+      'DistributionConfig.Logging.Prefix',
+      cdn.domainName
+    );
 
     new cdk.CfnOutput(this, 'LoadBalancerDnsName', {
       value: loadBalancer.loadBalancerDnsName,

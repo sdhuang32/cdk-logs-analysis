@@ -46,6 +46,7 @@
     "@aws-cdk/aws-ecr-assets": "^1.115.0",
     "@aws-cdk/aws-ecs": "^1.115.0",
     "@aws-cdk/aws-elasticloadbalancingv2": "^1.115.0",
+    "@aws-cdk/aws-s3": "^1.115.0",
     "@aws-cdk/core": "^1.115.0"
   },
   "bundledDependencies": [],
